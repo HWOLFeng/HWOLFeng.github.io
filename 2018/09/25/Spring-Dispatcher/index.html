@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Spring," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="HWolf's Blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="Spring DispatcherDispatcherServlet处理流程 Spring MVC框架，与其他很多web的MVC框架一样：请求驱动；所有设计都围绕着一个中央Servlet来展开，它负责把所有请求分发到控制器；DispatcherServlet应用的其实就是一个“前端控制器”的设计模式；   前端控制器模">
+<meta name="keywords" content="Spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Dispatcher">
+<meta property="og:url" content="http://hwolf.cn/2018/09/25/Spring-Dispatcher/index.html">
+<meta property="og:site_name" content="HWolf&#39;s Blog">
+<meta property="og:description" content="Spring DispatcherDispatcherServlet处理流程 Spring MVC框架，与其他很多web的MVC框架一样：请求驱动；所有设计都围绕着一个中央Servlet来展开，它负责把所有请求分发到控制器；DispatcherServlet应用的其实就是一个“前端控制器”的设计模式；   前端控制器模式是用来提供一个集中的请求处理机制，所有的请求都将由一个单一的处理程序处理。该处">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://hwolf.cn/image/DispatcherServlet.jpg">
+<meta property="og:image" content="http://hwolf.cn/image/Dispatcher-root.png">
+<meta property="og:updated_time" content="2018-01-03T13:05:25.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Dispatcher">
+<meta name="twitter:description" content="Spring DispatcherDispatcherServlet处理流程 Spring MVC框架，与其他很多web的MVC框架一样：请求驱动；所有设计都围绕着一个中央Servlet来展开，它负责把所有请求分发到控制器；DispatcherServlet应用的其实就是一个“前端控制器”的设计模式；   前端控制器模式是用来提供一个集中的请求处理机制，所有的请求都将由一个单一的处理程序处理。该处">
+<meta name="twitter:image" content="http://hwolf.cn/image/DispatcherServlet.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://hwolf.cn/2018/09/25/Spring-Dispatcher/"/>
+
+
+
+
+
+  <title>Spring Dispatcher | HWolf's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HWolf's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://hwolf.cn/2018/09/25/Spring-Dispatcher/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HWolf">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HWolf's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Spring Dispatcher</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-25T19:52:29+08:00">
+                2018-09-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/09/25/Spring-Dispatcher/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/09/25/Spring-Dispatcher/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/09/25/Spring-Dispatcher/" class="leancloud_visitors" data-flag-title="Spring Dispatcher">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Spring-Dispatcher"><a href="#Spring-Dispatcher" class="headerlink" title="Spring Dispatcher"></a>Spring Dispatcher</h1><h2 id="DispatcherServlet处理流程"><a href="#DispatcherServlet处理流程" class="headerlink" title="DispatcherServlet处理流程"></a>DispatcherServlet处理流程</h2><blockquote>
+<p>Spring MVC框架，与其他很多web的MVC框架一样：请求驱动；所有设计都围绕着一个中央Servlet来展开，它负责把所有请求分发到控制器；DispatcherServlet应用的其实就是一个“前端控制器”的设计模式；</p>
+</blockquote>
+<p><img src="/image/DispatcherServlet.jpg" alt="请求流程"></p>
+<p><strong>前端控制器模式</strong>是用来提供一个集中的<strong>请求处理</strong>机制，所有的请求都将由一个单一的处理程序处理。该处理程序可以做<strong>认证/授权/记录</strong>日志，或者<strong>跟踪/注册</strong>请求，然后把请求传给相应的处理程序。</p>
+<h2 id="DispatcherServlet作用"><a href="#DispatcherServlet作用" class="headerlink" title="DispatcherServlet作用"></a>DispatcherServlet作用</h2><p>DispatcherServlet主要用作职责调度工作，本身主要用于控制流程，主要职责如下：</p>
+<ol>
+<li>文件上传解析，如果请求类型是multipart将通过MultipartResolver进行文件上传解析；</li>
+<li>通过HandlerMapping，将请求映射到处理器（返回一个HandlerExecutionChain，它包括一个处理器、多个HandlerInterceptor拦截器）；</li>
+<li>通过HandlerAdapter支持多种类型的处理器(HandlerExecutionChain中的处理器)；</li>
+<li>通过ViewResolver解析逻辑视图名到具体视图实现；</li>
+<li>本地化解析；</li>
+<li>渲染具体的视图等；</li>
+<li>如果执行过程中遇到异常将交给HandlerExceptionResolver来解析。</li>
+</ol>
+<p>同时，DispatcherServlet维护了一个列表，其中保存了其所依赖的所有bean的默认实现。这个列表保存在包org.springframework.web.servlet下的DispatcherServlet.properties文件中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">	 // url请求和处理函数间的mapping关系</span><br><span class="line">    private List&lt;HandlerMapping&gt; handlerMappings;</span><br><span class="line">    // 来实际调用处理函数</span><br><span class="line">    private List&lt;HandlerAdapter&gt; handlerAdapters;</span><br><span class="line">    // 异常处理</span><br><span class="line">    private List&lt;HandlerExceptionResolver&gt; handlerExceptionResolvers;</span><br><span class="line">...</span><br><span class="line">	// 视图</span><br><span class="line">    private List&lt;ViewResolver&gt; viewResolvers;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h2 id="web-xml-配置"><a href="#web-xml-配置" class="headerlink" title="web.xml 配置"></a>web.xml 配置</h2><p>DispatcherServlet其实就是个Servlet（它继承自HttpServlet基类），同样也需要在你web应用的web.xml配置文件下声明。你需要在web.xml文件中把你希望DispatcherServlet处理的请求映射到对应的URL、处理类上去。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">web-app</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>example<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">load-on-startup</span>&gt;</span>1<span class="tag">&lt;/<span class="name">load-on-startup</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--xml文件内配置自己的Handler/Resolver--&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--Spring MVC会在你web应用的WEB-INF目录下查找一个名为[servlet-name]-servlet.xml的配置文件，并创建其中所定义的bean--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>contextConfigLocation<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>classpath:spring/spring-web.xml<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">load-on-startup</span>&gt;</span>1<span class="tag">&lt;/<span class="name">load-on-startup</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">web-app</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在Spring MVC中，每个DispatcherServlet都持有一个自己的上下文对象WebApplicationContext，它又继承了根（root）WebApplicationContext对象中已经定义的所有bean。这些继承的bean可以在具体的Servlet实例中被重载，在每个Servlet实例中你也可以定义其scope下的新bean。</p>
+<p><img src="/image/Dispatcher-root.png" alt="Dispatcher-root"></p>
+<h2 id="Dispatcher-拦截流程"><a href="#Dispatcher-拦截流程" class="headerlink" title="Dispatcher 拦截流程"></a>Dispatcher 拦截流程</h2><h3 id="流程简析"><a href="#流程简析" class="headerlink" title="流程简析"></a>流程简析</h3><p>Dispatcher 集成 FrameworkServlet</p>
+<ol>
+<li>doService 将上下文对象 WebApplicationContext/地区/主题 绑定到 request 中</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="comment">// 设置app上下文值</span></span><br><span class="line">request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, <span class="keyword">this</span>.getWebApplicationContext());</span><br><span class="line"><span class="comment">// 地区解析器和地区绑定</span></span><br><span class="line">request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, <span class="keyword">this</span>.localeResolver);</span><br><span class="line"><span class="comment">// 主题解析</span></span><br><span class="line">request.setAttribute(THEME_RESOLVER_ATTRIBUTE, <span class="keyword">this</span>.themeResolver);</span><br><span class="line">request.setAttribute(THEME_SOURCE_ATTRIBUTE, <span class="keyword">this</span>.getThemeSource());</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ol>
+<li>multipart文件处理器</li>
+</ol>
+<p>之后，框架将判断该文件是不是multipart（分为多个部分连续上传）的。若是，则将该请求包装成一个MultipartHttpServletRequest对象，以便处理链中的其他组件对它做进一步的处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.doDispatch(request, response);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// 判断是不是multipart，若是则交于其余组件处理</span></span><br><span class="line">            <span class="keyword">if</span>(!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted() &amp;&amp; attributesSnapshot != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">this</span>.restoreAttributesAfterInclude(request, attributesSnapshot);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ol>
+<li>为该请求查找一个合适的处理器</li>
+<li>如果处理器返回的是一个模型（model）</li>
+<li>finally 方法，异步请求处理，判断异步请求是否在进行，保存快照时属性值与当前 reqeust 不同，则恢复。</li>
+</ol>
+<h3 id="HandlerMapping"><a href="#HandlerMapping" class="headerlink" title="HandlerMapping"></a>HandlerMapping</h3><p>可以定义一个或者多个HandlerMapping，将进入容器的web请求映射到合适的处理器方法上。允许在控制器上添加注解后，通常你就不必这么做了，因为RequestMappingHandlerMapping类会自动查找所有注解了@RequestMapping的@Controller控制器bean。</p>
+<ol>
+<li>interceptors</li>
+<li>defaultHandler</li>
+<li>order</li>
+</ol>
+<h3 id="HandlerExceptionResolver"><a href="#HandlerExceptionResolver" class="headerlink" title="HandlerExceptionResolver"></a>HandlerExceptionResolver</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 处理器异常解析器接口</span><br><span class="line"> * @param httpServletRequest</span><br><span class="line"> * @param httpServletResponse</span><br><span class="line"> * @param o</span><br><span class="line"> * @param e 异常捕获</span><br><span class="line"> * @return 返回指定处理页</span><br><span class="line"> */</span><br><span class="line">public interface HandlerExceptionResolver &#123;</span><br><span class="line">    ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p>考虑到将DispatchServlet内的所有的源码全部解析一遍篇幅过长，也没有很大的意义，需要的才是重要的~~如果有需要了解更多的同学，请参考一下链接。</p>
+<blockquote>
+<ol>
+<li><a href="https://linesh.gitbooks.io/spring-mvc-documentation-linesh-translation/content/publish/21-2/the-dispatcher-servlet.html" target="_blank" rel="noopener">Spring MVC 4.2.4.RELEASE 中文文档</a></li>
+<li><a href="https://linesh.gitbooks.io/spring-mvc-documentation-linesh-translation/content/publish/21-2/1-special-bean-types-in-the-webapplicationcontext.html" target="_blank" rel="noopener">WebApplicationContext中特殊的bean类型</a></li>
+<li><a href="http://www.runoob.com/design-pattern/front-controller-pattern.html" target="_blank" rel="noopener">前端控制器模式| 菜鸟教程</a></li>
+<li><a href="http://jinnianshilongnian.iteye.com/blog/1602617" target="_blank" rel="noopener">DispatcherServlet详解 ——跟开涛学SpringMVC</a></li>
+</ol>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Spring/" rel="tag"># Spring</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/11/Docker-3 Stacks/" rel="next" title="Docker-3 Stacks">
+                <i class="fa fa-chevron-left"></i> Docker-3 Stacks
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/image/avatar.jpg"
+                alt="HWolf" />
+            
+              <p class="site-author-name" itemprop="name">HWolf</p>
+              <p class="site-description motion-element" itemprop="description">生命不息，追求不止。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/HWOLFeng" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:h.wolf@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Spring-Dispatcher"><span class="nav-number">1.</span> <span class="nav-text">Spring Dispatcher</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DispatcherServlet处理流程"><span class="nav-number">1.1.</span> <span class="nav-text">DispatcherServlet处理流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DispatcherServlet作用"><span class="nav-number">1.2.</span> <span class="nav-text">DispatcherServlet作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#web-xml-配置"><span class="nav-number">1.3.</span> <span class="nav-text">web.xml 配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dispatcher-拦截流程"><span class="nav-number">1.4.</span> <span class="nav-text">Dispatcher 拦截流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#流程简析"><span class="nav-number">1.4.1.</span> <span class="nav-text">流程简析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HandlerMapping"><span class="nav-number">1.4.2.</span> <span class="nav-text">HandlerMapping</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HandlerExceptionResolver"><span class="nav-number">1.4.3.</span> <span class="nav-text">HandlerExceptionResolver</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接"><span class="nav-number">1.5.</span> <span class="nav-text">参考链接</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HWolf</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=64903116";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://hwolf.cn/2018/09/25/Spring-Dispatcher/';
+          this.page.identifier = '2018/09/25/Spring-Dispatcher/';
+          this.page.title = 'Spring Dispatcher';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("VMV0zMmgE1rKi4yJjjDAaIEr-gzGzoHsz", "qlGPUpCz1Fatt1wVNqMxY3i9");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
