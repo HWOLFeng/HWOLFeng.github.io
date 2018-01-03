@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="HWolf&#39;s Blog">
 <meta property="og:description" content="简介关于安装Docker这里就不做介绍了，注意如果是个人使用安装ce版，免费的。  images – 镜像文件 Container – 可以看做一个运行的虚拟机，但是是进程隔离的。 Dockerfile – 是用于构建Container的脚本文件  Docker如同单词的字面意思一样，就像一个码头，你可以把基础的images看作小集装箱，里面有着很多货物（your requirements）。你可">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-02T11:04:27.000Z">
+<meta property="og:updated_time" content="2018-01-02T16:39:22.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Docker-1 Dockerfile与Container">
 <meta name="twitter:description" content="简介关于安装Docker这里就不做介绍了，注意如果是个人使用安装ce版，免费的。  images – 镜像文件 Container – 可以看做一个运行的虚拟机，但是是进程隔离的。 Dockerfile – 是用于构建Container的脚本文件  Docker如同单词的字面意思一样，就像一个码头，你可以把基础的images看作小集装箱，里面有着很多货物（your requirements）。你可">
@@ -362,7 +362,7 @@
 </ol>
 <p>Docker如同单词的字面意思一样，就像一个码头，你可以把基础的images看作小集装箱，里面有着很多货物（your requirements）。你可以选择直接运行images，这时就变成了Container/Service。此时的Container是一个新的环境，你可以往images里面添加新的货物（requirements）再运行。如果你觉得你这个加了料的还不错，你可以加上自己的tag 制作成新的集装箱（image）分享给别人。</p>
 <p>最小构建下，拉取环境镜像（如：Java image），然后将我们的 App 够建到镜像之内，保证App能在运行时获取所需的dependencies。</p>
-<h2 id="Dockerfile构建-Container"><a href="#Dockerfile构建-Container" class="headerlink" title="Dockerfile构建 Container"></a>Dockerfile构建 Container</h2><p>虽然可以通过拉取基础系统镜像，然后进入镜像中用Linux shell一步步安装、配置各种环境，但这样构建出来的镜像往往会很大，这也是官方建议使用Dockerfile来构建Container的原因之一。</p>
+<h2 id="Dockerfile构建-Container"><a href="#Dockerfile构建-Container" class="headerlink" title="Dockerfile构建 Container"></a>Dockerfile构建 Container</h2><p>虽然可以通过拉取基础系统镜像，然后进入镜像中用Linux shell一步步安装、配置各种环境，然后使用<code>docker commit</code>,但这样构建出来的镜像往往会很大，这也是官方建议使用Dockerfile来构建Container的原因之一。</p>
 <p>通常，当我们要启用一个新的Container，会新建一个文件夹，在文件夹内部创建一个新的Dockerfile，以下是来自官方的Demo。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"># Use an official Python runtime as a parent image</span><br><span class="line"># 必须：FROM 一个所需镜像</span><br><span class="line">FROM python:2.7-slim</span><br><span class="line"></span><br><span class="line"># Set the working directory to /app</span><br><span class="line"># Container 的工作目录</span><br><span class="line">WORKDIR /app</span><br><span class="line"></span><br><span class="line"># Copy the current directory contents into the container at /app</span><br><span class="line"># 将当前目录 . 的内容添加到 /app 目录中</span><br><span class="line">ADD . /app</span><br><span class="line"></span><br><span class="line"># Install any needed packages specified in requirements.txt</span><br><span class="line"># 安装需要的 packages，特别的 dependecies 可以在requirements.txt 文件中指出</span><br><span class="line">RUN pip install --trusted-host pypi.python.org -r requirements.txt</span><br><span class="line"></span><br><span class="line"># Make port 80 available to the world outside this container</span><br><span class="line"># TODO</span><br><span class="line"># 必须：暴露Container内的 80 端口（还需要暴露System 端口）</span><br><span class="line">EXPOSE 80</span><br><span class="line"></span><br><span class="line"># Define environment variable</span><br><span class="line"># 定义环境变量</span><br><span class="line">ENV NAME World</span><br><span class="line"></span><br><span class="line"># Run app.py when the container launches</span><br><span class="line"># 容器启动时运行 app.py</span><br><span class="line">CMD [&quot;python&quot;, &quot;app.py&quot;]</span><br></pre></td></tr></table></figure>
 <p>如果项目需要配置代理服务器（如：nginx），可以根据代理中的配置，在Dockerfile中进行如下配置</p>
@@ -374,7 +374,20 @@
 <p>接着，我们分析一下上面那样做的好处吧。假设，系统本身是不含python 环境，以及redis Flask 等，那么是执行不了上面的app.py的吧？那么当docker通过Dockerfile 构建好了环境时，在Container 内就可以运行了app.py文件，但是正如前面所介绍的Container 就像一个虚拟机，此时本机上还是不含python 环境！！这样我们就可以做出很多有意思的事情了，python2,python3,Java8,Java9等App 都能在一台机子上运行。</p>
 <p>这是官方总结一些常用的操作：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">docker build -t friendlyname .  # Create image using this directory&apos;s Dockerfile</span><br><span class="line">docker run -p 4000:80 friendlyname  # Run &quot;friendlyname&quot; mapping port 4000 to 80</span><br><span class="line">docker run -d -p 4000:80 friendlyname         # Same thing, but in detached mode</span><br><span class="line">docker container ls                                # List all running containers</span><br><span class="line">docker container ls -a             # List all containers, even those not running</span><br><span class="line">docker container stop &lt;hash&gt;           # Gracefully stop the specified container</span><br><span class="line">docker container kill &lt;hash&gt;         # Force shutdown of the specified container</span><br><span class="line">docker container rm &lt;hash&gt;        # Remove specified container from this machine</span><br><span class="line">docker container rm $(docker container ls -a -q)         # Remove all containers</span><br><span class="line">docker image ls -a                             # List all images on this machine</span><br><span class="line">docker image rm &lt;image id&gt;            # Remove specified image from this machine</span><br><span class="line">docker image rm $(docker image ls -a -q)   # Remove all images from this machine</span><br><span class="line">docker login             # Log in this CLI session using your Docker credentials</span><br><span class="line">docker tag &lt;image&gt; username/repository:tag  # Tag &lt;image&gt; for upload to registry</span><br><span class="line">docker push username/repository:tag            # Upload tagged image to registry</span><br><span class="line">docker run username/repository:tag                   # Run image from a registry</span><br></pre></td></tr></table></figure>
-<h2 id="制作image"><a href="#制作image" class="headerlink" title="制作image"></a>制作image</h2><p>接下来主要介绍如何制作一个自己的镜像。</p>
+<h2 id="Dockerfile命令"><a href="#Dockerfile命令" class="headerlink" title="Dockerfile命令"></a>Dockerfile命令</h2><p>接下来说说我对Docker中一些常用的命令的理解，具体的最佳实践还没摸索出来，等以后有机会更新一些demo，当然，有时间可以参考文末的链接。</p>
+<ul>
+<li><code>FROM</code> 指定基础镜像，可以看做package，可以去Dockerhub中找；</li>
+<li><code>RUN</code> 里面写的语句就像shell，但是有点区别，；</li>
+<li><code>EXPOSE</code> 暴露容器端口；</li>
+<li><code>CMD</code> 启动时要运行的命令；</li>
+<li><code>ENV</code> 设置环境变量，构建时和容器内都可以使用；</li>
+<li><code>ADD</code> 复制命令，把本机/URL的文件复制到镜像中；</li>
+<li><code>MAINTAINER</code> 作者信息；</li>
+<li><code>VOLUME</code> 设置卷，一般用于data储存；</li>
+<li><code>WORKDIR</code> 指定容器中的工作目录，有点像shell的cd命令；</li>
+<li><code>USER</code> 指定容器中进程的运行用户是谁、</li>
+</ul>
+<h2 id="制作image"><a href="#制作image" class="headerlink" title="制作image"></a>制作image</h2><p>完成了Dockerfile的编写，接下来主要介绍如何制作一个自己的镜像。</p>
 <h3 id="image的Tag"><a href="#image的Tag" class="headerlink" title="image的Tag"></a>image的Tag</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># docker tag image username/repository:tag</span><br><span class="line">docker tag project-name username/get-started:part2</span><br><span class="line"># docker push</span><br><span class="line">docker push username/repository:tag</span><br><span class="line"># 此时我们就可以通过 username/repository:tag 运行了</span><br><span class="line">docker run -p 4000:80 username/repository:tag</span><br></pre></td></tr></table></figure>
 <p>同时，如果觉得自己做的镜像不错，那么可以分享到Docker Cloud，阿里云，腾讯云等，这里就不进行详细介绍了。</p>
 <blockquote>
@@ -529,7 +542,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-count">2</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -585,7 +598,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dockerfile构建-Container"><span class="nav-number">2.</span> <span class="nav-text">Dockerfile构建 Container</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#制作image"><span class="nav-number">3.</span> <span class="nav-text">制作image</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#image的Tag"><span class="nav-number">3.1.</span> <span class="nav-text">image的Tag</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker-入门推荐阅读"><span class="nav-number">4.</span> <span class="nav-text">Docker 入门推荐阅读</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dockerfile构建-Container"><span class="nav-number">2.</span> <span class="nav-text">Dockerfile构建 Container</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dockerfile命令"><span class="nav-number">3.</span> <span class="nav-text">Dockerfile命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#制作image"><span class="nav-number">4.</span> <span class="nav-text">制作image</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#image的Tag"><span class="nav-number">4.1.</span> <span class="nav-text">image的Tag</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker-入门推荐阅读"><span class="nav-number">5.</span> <span class="nav-text">Docker 入门推荐阅读</span></a></li></ol></div>
             
 
           </div>
