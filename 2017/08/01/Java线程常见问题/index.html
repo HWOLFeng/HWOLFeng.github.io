@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Docker," />
+  <meta name="keywords" content="Java,线程," />
 
 
 
@@ -81,18 +81,18 @@
 
 
 
-<meta name="description" content="还记得吗，之前我们已经使用过了 Stack 来部署我们的App： 1docker stack deploy 还是照常，我们看看官方的定义:  A stack is a group of interrelated services that share dependencies, and can be orchestra">
-<meta name="keywords" content="Docker">
+<meta name="description" content="这篇博客主要总结平时线程常见问题，不定期更新吧，答案是个人理解结合原博主们的答案（当然也有原搬的，2333），如果有什么不对的地方恳请指出~  用Runnable还是Thread？Java不支持多重继承，但是可以实现多个接口。Runnable是接口，所以一般用Runnable。 Thread 类中的start() 和 ">
+<meta name="keywords" content="Java,线程">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Docker-3 Stacks">
-<meta property="og:url" content="http://hwolf.cn/2017/12/11/Docker-3 Stacks/index.html">
+<meta property="og:title" content="Java线程常见问题">
+<meta property="og:url" content="http://hwolf.cn/2017/08/01/Java线程常见问题/index.html">
 <meta property="og:site_name" content="HWolf&#39;s Blog">
-<meta property="og:description" content="还记得吗，之前我们已经使用过了 Stack 来部署我们的App： 1docker stack deploy 还是照常，我们看看官方的定义:  A stack is a group of interrelated services that share dependencies, and can be orchestrated and scaled together.  Stack是一组相互关联的S">
+<meta property="og:description" content="这篇博客主要总结平时线程常见问题，不定期更新吧，答案是个人理解结合原博主们的答案（当然也有原搬的，2333），如果有什么不对的地方恳请指出~  用Runnable还是Thread？Java不支持多重继承，但是可以实现多个接口。Runnable是接口，所以一般用Runnable。 Thread 类中的start() 和 run() 方法有什么区别？start()直接启动线程，run()线程并没有立即">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-02T11:37:16.000Z">
+<meta property="og:updated_time" content="2018-01-04T14:17:45.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Docker-3 Stacks">
-<meta name="twitter:description" content="还记得吗，之前我们已经使用过了 Stack 来部署我们的App： 1docker stack deploy 还是照常，我们看看官方的定义:  A stack is a group of interrelated services that share dependencies, and can be orchestrated and scaled together.  Stack是一组相互关联的S">
+<meta name="twitter:title" content="Java线程常见问题">
+<meta name="twitter:description" content="这篇博客主要总结平时线程常见问题，不定期更新吧，答案是个人理解结合原博主们的答案（当然也有原搬的，2333），如果有什么不对的地方恳请指出~  用Runnable还是Thread？Java不支持多重继承，但是可以实现多个接口。Runnable是接口，所以一般用Runnable。 Thread 类中的start() 和 run() 方法有什么区别？start()直接启动线程，run()线程并没有立即">
 
 
 
@@ -122,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="http://hwolf.cn/2017/12/11/Docker-3 Stacks/"/>
+  <link rel="canonical" href="http://hwolf.cn/2017/08/01/Java线程常见问题/"/>
 
 
 
 
 
-  <title>Docker-3 Stacks | HWolf's Blog</title>
+  <title>Java线程常见问题 | HWolf's Blog</title>
   
 
 
@@ -265,7 +265,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://hwolf.cn/2017/12/11/Docker-3 Stacks/">
+    <link itemprop="mainEntityOfPage" href="http://hwolf.cn/2017/08/01/Java线程常见问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="HWolf">
@@ -282,7 +282,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Docker-3 Stacks</h1>
+          <h1 class="post-title" itemprop="name headline">Java线程常见问题</h1>
         
 
         <div class="post-meta">
@@ -294,8 +294,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-11T18:57:50+08:00">
-                2017-12-11
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-01T21:20:45+08:00">
+                2017-08-01
               </time>
             
 
@@ -313,9 +313,9 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2017/12/11/Docker-3 Stacks/#comments" itemprop="discussionUrl">
+                <a href="/2017/08/01/Java线程常见问题/#comments" itemprop="discussionUrl">
                   <span class="post-comments-count disqus-comment-count"
-                        data-disqus-identifier="2017/12/11/Docker-3 Stacks/" itemprop="commentCount"></span>
+                        data-disqus-identifier="2017/08/01/Java线程常见问题/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -323,7 +323,7 @@
 
           
           
-             <span id="/2017/12/11/Docker-3 Stacks/" class="leancloud_visitors" data-flag-title="Docker-3 Stacks">
+             <span id="/2017/08/01/Java线程常见问题/" class="leancloud_visitors" data-flag-title="Java线程常见问题">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -354,21 +354,50 @@
       
 
       
-        <p>还记得吗，之前我们已经使用过了 Stack 来部署我们的App：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stack deploy</span><br></pre></td></tr></table></figure>
-<p>还是照常，我们看看官方的定义:</p>
-<blockquote>
-<p>A stack is a group of interrelated services that share dependencies, and can be orchestrated and scaled together.</p>
+        <p>这篇博客主要总结平时线程常见问题，不定期更新吧，答案是个人理解结合原博主们的答案（当然也有原搬的，2333），如果有什么不对的地方恳请指出~</p>
+<ol>
+<li>用Runnable还是Thread？<br>Java不支持多重继承，但是可以实现多个接口。Runnable是接口，所以一般用Runnable。</li>
+<li>Thread 类中的start() 和 run() 方法有什么区别？<br>start()直接启动线程，run()线程并没有立即启动。</li>
+<li>CyclicBarrier 和 CountDownLatch有什么不同？<br>CyclicBarrier 和 CountDownLatch 都可以用来让一组线程等待其它线程。与 CyclicBarrier不同的是，CountdownLatch不能重新使用。</li>
+<li>volatile 变量和 atomic 变量有什么不同？<ul>
+<li>一旦对象加上volatile，此变量就变得“透明”，在多线程的情况下可以避免<strong>重排序</strong>，但<strong>不保证原子性</strong>；</li>
+<li>atomic方法可以让这种操作具有原子性。</li>
+</ul>
+</li>
+<li>什么是线程安全？Vector是一个线程安全类吗？<br>一、代码在单线程和多线程运行的结果是相同的，并且总是和预期一样的。二、Vector含有同步方法保证线程安全。</li>
+<li>什么时候线程之间会存在竞态条件？<br>当两个线程竞争<strong>同一资源</strong>时，如果对资源的访问顺序敏感，就称存在竞态条件。</li>
+<li>如何在两个线程间共享数据？<br>共享内存和消息队列。（暂时只想到这两个）</li>
+<li>notify 和 notifyAll有什么区别？<br>字面区别，一个只唤醒<strong>一个</strong>等待线程，一个唤醒<strong>所有</strong>等待线程。</li>
+<li>什么是ThreadLocal变量？<ul>
+<li>ThreadLocal中文翻译为：线程局部变量。</li>
+<li><strong>应用场景</strong>：当很多线程需要多次使用同一个对象，并且需要该对象具有相同初始化值的时候最适合使用ThreadLocal。</li>
+<li>每个线程都有一个ThreadLocal就是每个线程都拥有了自己<strong>独立</strong>的一个变量，竞争条件被彻底消除了。</li>
+</ul>
+</li>
+<li>什么是FutureTask？<ul>
+<li>FutureTask类实现了RunnableFuture接口</li>
+<li>它有启动和取消运算、查询运算是否完成和取回运算结果等方法。只有当<strong>运算完成</strong>的时候结果才能取回，如果运算尚未完成get方法将会<strong>阻塞</strong>。</li>
+</ul>
+</li>
+<li>什么是线程池？为什么要使用它？<ul>
+<li>总想着自己创建线程是很麻烦的，也是很低效的，没有必要的话实在不用自己创建线程，倒不如一次创建一个指定大小的线程池，有需求的时候就去取~</li>
+<li>常见的有：<strong>单线程池、缓存线程池</strong>等。</li>
+</ul>
+</li>
+<li>有三个线程T1，T2，T3，怎么确保它们按顺序执行？<br>可以用线程类的<strong>join()</strong>方法在一个线程中启动另一个线程，另外一个线程完成该线程继续执行。</li>
+<li>synchronized 和 ReentrantLock 有什么不同？<br>synchronized是同步代码块的关键字，比较粗粒度，普适；ReentrantLock是重录锁，常和CountDownLatch结合使用，比较细粒度。</li>
+<li>Thread类中的yield方法有什么作用？<br>yield方法可以<strong>暂停当前正在执行的线程对象</strong>，让其它有相同优先级的线程执行。</li>
+<li>Java线程池中submit() 和 execute()方法有什么区别？<br>两个方法都可以向线程池提交任务，execute()方法的返回类型是void，它定义在Executor接口中, 而submit()方法可以返回持有计算结果的Future对象，它定义在ExecutorService接口中，它扩展了Executor接口，其它线程池类像ThreadPoolExecutor和ScheduledThreadPoolExecutor都有这些方法。</li>
+<li>多线程中的忙循环是什么?<br>忙循环就是程序员用循环让一个线程等待，不像传统方法wait(), sleep() 或 yield() 它们都放弃了CPU控制，而忙循环不会放弃CPU，它就是在运行一个空循环。这么做的目的是为了保留CPU缓存，<strong>避免重建缓存和减少等待重建的时间就可以使用它了</strong>。</li>
+<li>fork join框架是什么？<br>它是专门为了那些可以递归划分成许多子模块设计的，目的是将所有可用的处理能力用来提升程序的性能。fork join框架一个巨大的优势是它使用了<strong>工作窃取算法</strong>，可以完成更多任务的工作线程可以从其它线程中窃取任务来执行。<blockquote>
+<p>官方提供： <a href="http://www.oracle.com/technetwork/cn/articles/java/fork-join-422606-zhs.html" target="_blank" rel="noopener">分解和合并：Java 也擅长轻松的并行编程！</a></p>
 </blockquote>
-<p>Stack是一组相互关联的Service，之间可以共享依赖关系，并且可以协调在一起。</p>
-<h2 id="添加一个新的Service"><a href="#添加一个新的Service" class="headerlink" title="添加一个新的Service"></a>添加一个新的Service</h2><p>在之前说，yml配置文件中，services选项可以配置多个，其实就是多个Service可能会相互使用，形成 Stack。接下来往配置文件，增加一个新Service，使我们能在网页上看见node的信息(参数可以翻翻前面的Service讲解)：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">version: &quot;3&quot;</span><br><span class="line">services:</span><br><span class="line">  web:</span><br><span class="line">    image: username/repo:tag</span><br><span class="line">    deploy:</span><br><span class="line">      replicas: 5</span><br><span class="line">      restart_policy:</span><br><span class="line">        condition: on-failure</span><br><span class="line">      resources:</span><br><span class="line">        limits:</span><br><span class="line">          cpus: &quot;0.1&quot;</span><br><span class="line">          memory: 50M</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;80:80&quot;</span><br><span class="line">    networks:</span><br><span class="line">      - webnet</span><br><span class="line">  visualizer:</span><br><span class="line">  	# Docker 官方提供可视化管理node的镜像</span><br><span class="line">    image: dockersamples/visualizer:stable</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;8080:8080&quot;</span><br><span class="line">    # sock 关联</span><br><span class="line">    volumes:</span><br><span class="line">      - &quot;/var/run/docker.sock:/var/run/docker.sock&quot;</span><br><span class="line">    deploy:</span><br><span class="line">      # 运行在swarm manager上，而不是worker，这样才能在整个Stack 运行</span><br><span class="line">      placement:</span><br><span class="line">        constraints: [node.role == manager]</span><br><span class="line">    networks:</span><br><span class="line">      - webnet</span><br><span class="line">networks:</span><br><span class="line">  webnet:</span><br></pre></td></tr></table></figure>
-<p>这里需要强调一下，确保你编写yml的文件是对你的swarm manager生效，而不是其他node。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 查看所有 Container 信息</span><br><span class="line">docker-machine ls</span><br><span class="line"># 对于Mac，如果不是，设置 swarm manager</span><br><span class="line">docker-machine env yourSwarmManagerName</span><br><span class="line">eval $(docker-machine env yourSwarmManagerName)</span><br><span class="line"></span><br><span class="line"># Windows</span><br><span class="line">docker-machine env yourSwarmManagerName</span><br><span class="line">&amp; &quot;C:\Program Files\Docker\Docker\Resources\bin\docker-machine.exe&quot; env myvm1 | Invoke-Expression</span><br></pre></td></tr></table></figure>
-<p>生效配置文件，重新部署App，并访问本地8080端口查看结果。当然，我们也可以查看看dockersamples/visualizer:stable 运行状态了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 部署</span><br><span class="line">docker stack deploy -c docker-compose.yml yourServiceName</span><br><span class="line"># 查看当前运行Service</span><br><span class="line">docker stack ps yourServiceName</span><br></pre></td></tr></table></figure>
-<h2 id="数据持久化"><a href="#数据持久化" class="headerlink" title="数据持久化"></a>数据持久化</h2><p>不管哪个App都离不开数据库，在这里我们利用Stack特性，添加Redis服务。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">version: &quot;3&quot;</span><br><span class="line">services:</span><br><span class="line">  web:</span><br><span class="line">    # replace username/repo:tag with your name and image details</span><br><span class="line">    image: username/repo:tag</span><br><span class="line">    deploy:</span><br><span class="line">      replicas: 5</span><br><span class="line">      restart_policy:</span><br><span class="line">        condition: on-failure</span><br><span class="line">      resources:</span><br><span class="line">        limits:</span><br><span class="line">          cpus: &quot;0.1&quot;</span><br><span class="line">          memory: 50M</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;80:80&quot;</span><br><span class="line">    networks:</span><br><span class="line">      - webnet</span><br><span class="line">  visualizer:</span><br><span class="line">    image: dockersamples/visualizer:stable</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;8080:8080&quot;</span><br><span class="line">    volumes:</span><br><span class="line">      - &quot;/var/run/docker.sock:/var/run/docker.sock&quot;</span><br><span class="line">    deploy:</span><br><span class="line">      placement:</span><br><span class="line">        constraints: [node.role == manager]</span><br><span class="line">    networks:</span><br><span class="line">      - webnet</span><br><span class="line">  redis:</span><br><span class="line">    image: redis</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;6379:6379&quot;</span><br><span class="line">    volumes:</span><br><span class="line">     # yourSystemDataDir:containerDataDir</span><br><span class="line">     # 如果不映射保存数据，那么一旦重新部署Redis的数据就没了。</span><br><span class="line">      - /home/docker/data:/data</span><br><span class="line">    deploy:</span><br><span class="line">      placement:</span><br><span class="line">        constraints: [node.role == manager]</span><br><span class="line">    command: redis-server --appendonly yes</span><br><span class="line">    networks:</span><br><span class="line">      - webnet</span><br><span class="line">networks:</span><br><span class="line">  webnet:</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<blockquote>
+<p><a href="http://www.importnew.com/12773.html" target="_blank" rel="noopener">Java线程面试题 Top 50</a></p>
+</blockquote>
+
       
     </div>
     
@@ -385,7 +414,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Docker/" rel="tag"># Docker</a>
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/线程/" rel="tag"># 线程</a>
           
         </div>
       
@@ -398,8 +429,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/12/10/Docker-2-Service与Swarm/" rel="next" title="Docker-2 Service与Swarms">
-                <i class="fa fa-chevron-left"></i> Docker-2 Service与Swarms
+              <a href="/2017/07/30/Java8小结/" rel="next" title="Java8小结">
+                <i class="fa fa-chevron-left"></i> Java8小结
               </a>
             
           </div>
@@ -407,6 +438,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/25/Spring-Dispatcher/" rel="prev" title="Spring Dispatcher">
+                Spring Dispatcher <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -468,17 +503,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview-wrap sidebar-panel">
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -556,22 +582,6 @@
         </div>
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#添加一个新的Service"><span class="nav-number">1.</span> <span class="nav-text">添加一个新的Service</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据持久化"><span class="nav-number">2.</span> <span class="nav-text">数据持久化</span></a></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
@@ -745,9 +755,9 @@
     
       <script type="text/javascript">
         var disqus_config = function () {
-          this.page.url = 'http://hwolf.cn/2017/12/11/Docker-3 Stacks/';
-          this.page.identifier = '2017/12/11/Docker-3 Stacks/';
-          this.page.title = 'Docker-3 Stacks';
+          this.page.url = 'http://hwolf.cn/2017/08/01/Java线程常见问题/';
+          this.page.identifier = '2017/08/01/Java线程常见问题/';
+          this.page.title = 'Java线程常见问题';
         };
         var d = document, s = d.createElement('script');
         s.src = 'https://hwolf-cn.disqus.com/embed.js';
