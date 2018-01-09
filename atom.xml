@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://hwolf.cn/"/>
-  <updated>2018-01-09T12:42:55.000Z</updated>
+  <updated>2018-01-09T10:25:49.000Z</updated>
   <id>http://hwolf.cn/</id>
   
   <author>
@@ -15,30 +15,6 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>ABOUT ME</title>
-    <link href="http://hwolf.cn/2018/01/09/ABOUT%20ME/"/>
-    <id>http://hwolf.cn/2018/01/09/ABOUT ME/</id>
-    <published>2018-01-09T12:42:30.000Z</published>
-    <updated>2018-01-09T12:42:55.000Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="个人信息"><a href="#个人信息" class="headerlink" title="个人信息"></a>个人信息</h1><ul><li>黄文锋/男/1996 </li><li>大三/NEUQ通信工程专业 </li><li>Github：<a href="http://github.com/HWOLFeng" target="_blank" rel="noopener">http://github.com/HWOLFeng</a> </li><li>期望职位：JAVA开发工程师，架构师</li><li>期望城市：北京<h1 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h1><ul><li>Email：wolf2295566872@gmail.com </li><li>QQ：2295566872</li></ul></li></ul><h1 id="实习经历"><a href="#实习经历" class="headerlink" title="实习经历"></a>实习经历</h1><h2 id="某初创公司-（-2017年9月-至今）"><a href="#某初创公司-（-2017年9月-至今）" class="headerlink" title="某初创公司 （ 2017年9月 ~ 至今）"></a>某初创公司 （ 2017年9月 ~ 至今）</h2><h3 id="无源智能锁后台管理系统"><a href="#无源智能锁后台管理系统" class="headerlink" title="无源智能锁后台管理系统"></a>无源智能锁后台管理系统</h3><p>我在此项目负责设计数据库表、接口，以及技术实现、测试、优化，最终部署、维护，从立项到最后交付历时两周。本项目基于SSM框架，实现前后端分离，增加Shiro进行权限控制，自动化部署使用Gitlab+Jenkins。</p><h1 id="技能清单"><a href="#技能清单" class="headerlink" title="技能清单"></a>技能清单</h1><p>以下均为我掌握的技能</p><ul><li>Web开发：JAVA</li><li>Web框架：Spring/SpringMVC/Spring Boot/Mybatis/Dubbo</li><li>数据库相关：MySQL/Redis</li><li>版本管理和自动化部署工具：Git/Docker/Jenkins</li></ul>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;个人信息&quot;&gt;&lt;a href=&quot;#个人信息&quot; class=&quot;headerlink&quot; title=&quot;个人信息&quot;&gt;&lt;/a&gt;个人信息&lt;/h1&gt;&lt;ul&gt;
-&lt;li&gt;黄文锋/男/1996 &lt;/li&gt;
-&lt;li&gt;大三/NEUQ通信工程专业 &lt;/li&gt;
-&lt;li&gt;Github：&lt;a h
-      
-    
-    </summary>
-    
-    
-  </entry>
   
   <entry>
     <title>MySQL总结</title>

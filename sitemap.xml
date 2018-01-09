@@ -2,9 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://hwolf.cn/2018/01/09/ABOUT%20ME/</loc>
+    <loc>http://hwolf.cn/about/index.html</loc>
     
-    <lastmod>2018-01-09T12:42:55.000Z</lastmod>
+    <lastmod>2018-01-09T12:47:13.000Z</lastmod>
     
   </url>
   
@@ -75,13 +75,6 @@
     <loc>http://hwolf.cn/categories/index.html</loc>
     
     <lastmod>2018-01-02T11:58:07.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://hwolf.cn/about/index.html</loc>
-    
-    <lastmod>2018-01-02T11:57:48.000Z</lastmod>
     
   </url>
   
