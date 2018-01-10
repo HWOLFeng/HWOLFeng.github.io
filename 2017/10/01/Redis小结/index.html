@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="HWolf&#39;s Blog">
 <meta property="og:description" content="特性 稳定简单 丰富的数据结构 性能优秀 速度快 支持事务操作  索引 默认安装在 /usr/local/redis  后台启动 redis-server &amp;amp; 后台启动+日志 nobup redis-server &amp;amp; 关闭：redis-cli shutdown 指定host&amp;amp;port客户端 redis-cli -h host -p port 默认16个库,可以通过修改配置文">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-01-03T11:26:35.000Z">
+<meta property="og:updated_time" content="2018-01-10T01:15:25.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Redis小结">
 <meta name="twitter:description" content="特性 稳定简单 丰富的数据结构 性能优秀 速度快 支持事务操作  索引 默认安装在 /usr/local/redis  后台启动 redis-server &amp;amp; 后台启动+日志 nobup redis-server &amp;amp; 关闭：redis-cli shutdown 指定host&amp;amp;port客户端 redis-cli -h host -p port 默认16个库,可以通过修改配置文">
@@ -468,38 +468,35 @@
 </ol>
 <h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>Redis 的事务是不允许被打断的，一旦入队成功就是<strong>部分回滚</strong>。</p>
 <ol>
-<li>正常情况</li>
-</ol>
+<li><p>正常情况</p>
 <ul>
 <li>开始事务:MULTI</li>
 <li>事务书写</li>
 <li>结束事务:EXEC</li>
 </ul>
-<ol>
-<li>异常情况–语法错误</li>
-</ol>
+</li>
+<li><p>异常情况–语法错误</p>
 <ul>
 <li>中间有任何异常事务都不能提交</li>
 </ul>
-<ol>
-<li>例外情况</li>
-</ol>
+</li>
+<li><p>例外情况</p>
 <ul>
 <li>中间出错，但是还是成功进入队列</li>
 </ul>
-<ol>
-<li>放弃情况</li>
-</ol>
+</li>
+<li><p>放弃情况</p>
 <ul>
 <li>DISCARD</li>
 </ul>
-<ol>
-<li>复杂情况–解决并发</li>
-</ol>
+</li>
+<li><p>复杂情况–解决并发</p>
 <ul>
 <li>悲观锁，乐观锁(基于版本号)，需要版本号一致，一旦修改版本号+1，比对版本号。</li>
 <li>WATCH 机制，监控多个key，当数据在事务开始之前有变化那么当前事务就不能执行。</li>
 </ul>
+</li>
+</ol>
 <h2 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h2><ul>
 <li>内存-&gt;磁盘</li>
 <li>两种模式都开启默认加载AOF文件</li>
