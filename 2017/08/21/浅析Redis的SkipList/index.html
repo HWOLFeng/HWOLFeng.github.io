@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="HWolf's Blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="SkipList是什么？SkipList 俗称跳表，是带有层级结构的链表（节点都是排好序的）。通过增加层数，节点上可以带有更多的信息，通过这些信息可以直接访问更远的节点。 一个跳表，应该具有以下特征：  一个跳表应该有几个层（level）组成； 跳表的第一层包含所有的元素； 每一层都是一个有序的链表； 如果元素x出现在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅析Redis的SkipList">
+<meta property="og:url" content="http://hwolf.cn/2017/08/21/浅析Redis的SkipList/index.html">
+<meta property="og:site_name" content="HWolf&#39;s Blog">
+<meta property="og:description" content="SkipList是什么？SkipList 俗称跳表，是带有层级结构的链表（节点都是排好序的）。通过增加层数，节点上可以带有更多的信息，通过这些信息可以直接访问更远的节点。 一个跳表，应该具有以下特征：  一个跳表应该有几个层（level）组成； 跳表的第一层包含所有的元素； 每一层都是一个有序的链表； 如果元素x出现在第i层，则所有比i小的层都包含x； 第i层的元素通过一个down指针指向下一层拥">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.zkt.name/content/images/2015/11/skip-list.png">
+<meta property="og:image" content="http://www.zkt.name/content/images/2015/11/skip-search.png">
+<meta property="og:image" content="http://www.zkt.name/content/images/2015/11/skip-insert-1.png">
+<meta property="og:image" content="http://www.zkt.name/content/images/2015/11/skip-delete.png">
+<meta property="og:updated_time" content="2018-01-10T03:08:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浅析Redis的SkipList">
+<meta name="twitter:description" content="SkipList是什么？SkipList 俗称跳表，是带有层级结构的链表（节点都是排好序的）。通过增加层数，节点上可以带有更多的信息，通过这些信息可以直接访问更远的节点。 一个跳表，应该具有以下特征：  一个跳表应该有几个层（level）组成； 跳表的第一层包含所有的元素； 每一层都是一个有序的链表； 如果元素x出现在第i层，则所有比i小的层都包含x； 第i层的元素通过一个down指针指向下一层拥">
+<meta name="twitter:image" content="http://www.zkt.name/content/images/2015/11/skip-list.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://hwolf.cn/2017/08/21/浅析Redis的SkipList/"/>
+
+
+
+
+
+  <title>浅析Redis的SkipList | HWolf's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HWolf's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://hwolf.cn/2017/08/21/浅析Redis的SkipList/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HWolf">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/image/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HWolf's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浅析Redis的SkipList</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-21T10:20:23+08:00">
+                2017-08-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/08/21/浅析Redis的SkipList/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/08/21/浅析Redis的SkipList/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2017/08/21/浅析Redis的SkipList/" class="leancloud_visitors" data-flag-title="浅析Redis的SkipList">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="SkipList是什么？"><a href="#SkipList是什么？" class="headerlink" title="SkipList是什么？"></a>SkipList是什么？</h2><p>SkipList 俗称跳表，是带有层级结构的链表（节点都是排好序的）。通过增加层数，节点上可以带有更多的信息，通过这些信息可以直接访问更远的节点。</p>
+<p>一个跳表，应该具有以下特征：</p>
+<ul>
+<li>一个跳表应该有几个层（level）组成；</li>
+<li>跳表的第一层包含所有的元素；</li>
+<li>每一层都是一个有序的链表；</li>
+<li>如果元素x出现在第i层，则所有比i小的层都包含x；</li>
+<li>第i层的元素通过一个down指针指向下一层拥有相同值的元素；</li>
+<li>在每一层中，-1和1两个元素都出现(分别表示INT_MIN和INT_MAX)；</li>
+<li>Top指针指向最高层的第一个元素。</li>
+</ul>
+<p>Skip List作为性能和实现难度的一个折中，它的查询、插入、删除等主要操作时间复杂度<strong>期望值</strong>也都是 <em>Θ(lgn)</em>，空间复杂度是 <em>Θ(n)</em>。<br>SkipList的结构如下图，除了数据域，每个节点还包括1个或多个域用来保存后续节点的位置。</p>
+<p><img src="http://www.zkt.name/content/images/2015/11/skip-list.png" alt=""></p>
+<h2 id="SkipList查找节点"><a href="#SkipList查找节点" class="headerlink" title="SkipList查找节点"></a>SkipList查找节点</h2><p>查找操作很简单，比如我们要找图中节点key为<strong>20</strong>的节点。</p>
+<ul>
+<li>我们首先获取到头节点，从头检点的最高层开始（节点中的点表示指向节点的指针），下一个节点是<strong>17</strong>, 很明显<strong>20&gt;17</strong>所以应该在后面，尝试查找<code>level-2</code>层下一个元素。如果继续往后结果是<strong>NULL</strong>，那说明后面没有要找的节点了。</li>
+<li>跳到下一层<code>level-1</code>继续往后是<strong>25</strong>且<strong>20&lt;25</strong>说明后面也没有我们要找的节点了。</li>
+<li>再跳到下一层<code>level-0</code>，往后就找到我们要的节点了。如果到最下面一层还找不到，那这个节点就肯定不在表中了（因为最低层包含所有节点）。</li>
+</ul>
+<p><img src="http://www.zkt.name/content/images/2015/11/skip-search.png" alt=""></p>
+<p>这里例子中我们只需要<strong>2次</strong>就找到20这个节点，如果是简单的链表结构则需要<strong>5次</strong>。</p>
+<h2 id="SkipList插入节点"><a href="#SkipList插入节点" class="headerlink" title="SkipList插入节点"></a>SkipList插入节点</h2><p>插入操作比较复杂，因为插入操作还要考虑“0-1概率问题”。接下来举例子，假设我们需要插入10节点，需要根据当前表的结构得到一个合适的高度，插入后可以让SkipList的尽量的接近理想的结构，但是实现上这会比较的复杂。</p>
+<p>根据概率随机为新节点生成一个高度，具体的规则如下：</p>
+<ul>
+<li>给定一个概率<strong>p</strong>, 产生一个<strong>[0,1)</strong>之间的随机数</li>
+<li>如果这个随机数<strong>&lt; p</strong>,则向上加一层</li>
+<li>重复以上动作，直到随机数<strong>&gt;=p</strong></li>
+</ul>
+<p><img src="http://www.zkt.name/content/images/2015/11/skip-insert-1.png" alt=""></p>
+<p>如上图，我们在插入节点之时，从<code>level-0</code>层开始产生随机概率，若满足<strong>规则2</strong>，则添加<code>level-1</code>层，反之则结束动作。而关于如何选择合适的<strong>p</strong>，如果一定要给个固定值，可以参考<a href="http://epaperpress.com/sortsearch/download/skiplist.pdf" target="_blank" rel="noopener">William Pugh的原始论文</a>，但是多数的算法中都是用函数产生一个0~1的<strong>随机数p</strong>。</p>
+<h2 id="SkipList删除"><a href="#SkipList删除" class="headerlink" title="SkipList删除"></a>SkipList删除</h2><p>删除操作跟插入操作类似。首先找到我们要删除节点的位置，在查找时使用临时空间记录节点在每一级的位置。接着就是逐层的链表删除操作，最后记住要释放空间。</p>
+<p>删除节点之后，如果最高层没有节点存在，那SkipList的层数相应的需要降下来。下图表示节点<strong>9</strong>的删除操作。 </p>
+<p><img src="http://www.zkt.name/content/images/2015/11/skip-delete.png" alt=""></p>
+<h2 id="Redis如何实现SkipList？"><a href="#Redis如何实现SkipList？" class="headerlink" title="Redis如何实现SkipList？"></a>Redis如何实现SkipList？</h2><p>redis 中跳表数据结构定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">// 跳表节点结构体</span><br><span class="line">/* ZSETs use a specialized version of Skiplists */</span><br><span class="line">typedef struct zskiplistNode &#123;</span><br><span class="line">    // 节点数据</span><br><span class="line">    robj *obj;</span><br><span class="line"></span><br><span class="line">    // 分数，游戏分数？按游戏分数排序</span><br><span class="line">    double score;</span><br><span class="line"></span><br><span class="line">    // 后驱指针</span><br><span class="line">    struct zskiplistNode *backward;</span><br><span class="line"></span><br><span class="line">    // 后驱指针数组</span><br><span class="line">    struct zskiplistLevel &#123;</span><br><span class="line">        struct zskiplistNode *forward;</span><br><span class="line"></span><br><span class="line">        // 调到下一个数据项需要走多少步</span><br><span class="line">        unsigned int span;</span><br><span class="line">    &#125; level[];</span><br><span class="line">&#125; zskiplistNode;</span><br><span class="line"></span><br><span class="line">typedef struct zskiplist &#123;</span><br><span class="line">    // 跳表头尾指针</span><br><span class="line">    struct zskiplistNode *header, *tail;</span><br><span class="line"></span><br><span class="line">    // 跳表的长度</span><br><span class="line">    unsigned long length;</span><br><span class="line"></span><br><span class="line">    // 跳表的高度</span><br><span class="line">    int level;</span><br><span class="line">&#125; zskiplist;</span><br></pre></td></tr></table></figure>
+<h2 id="redis中SkipList插入算法"><a href="#redis中SkipList插入算法" class="headerlink" title="redis中SkipList插入算法"></a>redis中SkipList插入算法</h2><p>redis中命名为，zskiplist，其中产生的概率p是随机的，redis中跳表插入算法的具体实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) &#123;</span><br><span class="line">    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;</span><br><span class="line">    unsigned int rank[ZSKIPLIST_MAXLEVEL];</span><br><span class="line">    int i, level;</span><br><span class="line"></span><br><span class="line">    redisAssert(!isnan(score));</span><br><span class="line">    x = zsl-&gt;header;</span><br><span class="line"></span><br><span class="line">    // 遍历 skiplist 中所有的层，找到数据将要插入的位置，并保存在 update 中</span><br><span class="line">    for (i = zsl-&gt;level-1; i &gt;= 0; i--) &#123;</span><br><span class="line">        /* store rank that is crossed to reach the insert position */</span><br><span class="line">        rank[i] = i == (zsl-&gt;level-1) ? 0 : rank[i+1];</span><br><span class="line"></span><br><span class="line">        // 链表的搜索</span><br><span class="line">        while (x-&gt;level[i].forward &amp;&amp;</span><br><span class="line">            (x-&gt;level[i].forward-&gt;score &lt; score ||</span><br><span class="line">                (x-&gt;level[i].forward-&gt;score == score &amp;&amp;</span><br><span class="line">                compareStringObjects(x-&gt;level[i].forward-&gt;obj,obj) &lt; 0))) &#123;</span><br><span class="line">            rank[i] += x-&gt;level[i].span;</span><br><span class="line">            x = x-&gt;level[i].forward;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // update[i] 记录了新数据项的前驱</span><br><span class="line">        update[i] = x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // random 一个 level，是随机的</span><br><span class="line">    /* we assume the key is not already inside, since we allow duplicated</span><br><span class="line">     * scores, and the re-insertion of score and redis object should never</span><br><span class="line">     * happen since the caller of zslInsert() should test in the hash table</span><br><span class="line">     * if the element is already inside or not. */</span><br><span class="line">    level = zslRandomLevel();</span><br><span class="line"></span><br><span class="line">    // random level 比原有的 zsl-&gt;level 大，需要增加 skiplist 的 level</span><br><span class="line">    if (level &gt; zsl-&gt;level) &#123;</span><br><span class="line">        for (i = zsl-&gt;level; i &lt; level; i++) &#123;</span><br><span class="line">            rank[i] = 0;</span><br><span class="line">            update[i] = zsl-&gt;header;</span><br><span class="line">            update[i]-&gt;level[i].span = zsl-&gt;length;</span><br><span class="line">        &#125;</span><br><span class="line">        zsl-&gt;level = level;</span><br><span class="line">    &#125;</span><br><span class="line">    // 插入</span><br><span class="line">    x = zslCreateNode(level,score,obj);</span><br><span class="line">    for (i = 0; i &lt; level; i++) &#123;</span><br><span class="line">        // 新节点项插到 update[i] 的后面</span><br><span class="line">        x-&gt;level[i].forward = update[i]-&gt;level[i].forward;</span><br><span class="line">        update[i]-&gt;level[i].forward = x;</span><br><span class="line"></span><br><span class="line">        /* update span covered by update[i] as x is inserted here */</span><br><span class="line">        x-&gt;level[i].span = update[i]-&gt;level[i].span - (rank[0] - rank[i]);</span><br><span class="line">        update[i]-&gt;level[i].span = (rank[0] - rank[i]) + 1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 更高的 level 尚未调整 span</span><br><span class="line">    /* increment span for untouched levels */</span><br><span class="line">    for (i = level; i &lt; zsl-&gt;level; i++) &#123;</span><br><span class="line">        update[i]-&gt;level[i].span++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 调整新节点的前驱指针</span><br><span class="line">    x-&gt;backward = (update[0] == zsl-&gt;header) ? NULL : update[0];</span><br><span class="line">    if (x-&gt;level[0].forward)</span><br><span class="line">        x-&gt;level[0].forward-&gt;backward = x;</span><br><span class="line">    else</span><br><span class="line">        zsl-&gt;tail = x;</span><br><span class="line"></span><br><span class="line">    // 调整 skiplist 的长度</span><br><span class="line">    zsl-&gt;length++;</span><br><span class="line">    return x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="redis中SkipList删除算法"><a href="#redis中SkipList删除算法" class="headerlink" title="redis中SkipList删除算法"></a>redis中SkipList删除算法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">// x 是需要删除的节点</span><br><span class="line">// update 是 每一个层 x 的前驱数组</span><br><span class="line">/* Internal function used by zslDelete, zslDeleteByScore and zslDeleteByRank */</span><br><span class="line">void zslDeleteNode(zskiplist *zsl, zskiplistNode *x, zskiplistNode **update) &#123;</span><br><span class="line">    int i;</span><br><span class="line"></span><br><span class="line">    // 调整 span 和 forward 指针</span><br><span class="line">    for (i = 0; i &lt; zsl-&gt;level; i++) &#123;</span><br><span class="line">        if (update[i]-&gt;level[i].forward == x) &#123;</span><br><span class="line">            update[i]-&gt;level[i].span += x-&gt;level[i].span - 1;</span><br><span class="line">            update[i]-&gt;level[i].forward = x-&gt;level[i].forward;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            // update[i]-&gt;level[i].forward == NULL，只调整 span</span><br><span class="line">            update[i]-&gt;level[i].span -= 1;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 调整后驱指针</span><br><span class="line">    if (x-&gt;level[0].forward) &#123;</span><br><span class="line">        x-&gt;level[0].forward-&gt;backward = x-&gt;backward;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        zsl-&gt;tail = x-&gt;backward;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 删除某一个节点后，层数 level 可能降低，调整 level</span><br><span class="line">    while(zsl-&gt;level &gt; 1 &amp;&amp; zsl-&gt;header-&gt;level[zsl-&gt;level-1].forward == NULL)</span><br><span class="line">        zsl-&gt;level--;</span><br><span class="line"></span><br><span class="line">    // 调整跳表的长度</span><br><span class="line">    zsl-&gt;length--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="redis中的ZSET"><a href="#redis中的ZSET" class="headerlink" title="redis中的ZSET"></a>redis中的ZSET</h2><p>redis 中结合跳表（skiplist）和哈希表（dict）形成一个新的数据结构 zset。添加 dict 是为了快速定位跳表中是否存在某个 member。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">typedef struct zset &#123;</span><br><span class="line">    dict *dict;</span><br><span class="line">    zskiplist *zsl;</span><br><span class="line">&#125; zset;</span><br></pre></td></tr></table></figure>
+<h2 id="使用JAVA简单实现SkipList数据结构"><a href="#使用JAVA简单实现SkipList数据结构" class="headerlink" title="使用JAVA简单实现SkipList数据结构"></a>使用JAVA简单实现SkipList数据结构</h2><p>利用JAVA实现SkipList：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">public class SkipList&lt;T&gt; &#123;</span><br><span class="line"></span><br><span class="line">    // 最高层数</span><br><span class="line">    private final int MAX_LEVEL;</span><br><span class="line">    // 当前层数</span><br><span class="line">    private int listLevel;</span><br><span class="line">    // 表头</span><br><span class="line">    private SkipListNode&lt;T&gt; listHead;</span><br><span class="line">    // 表尾</span><br><span class="line">    private SkipListNode&lt;T&gt; NIL;</span><br><span class="line">    // 生成randomLevel用到的概率值</span><br><span class="line">    private final double P;</span><br><span class="line">    // 论文里给出的最佳概率值</span><br><span class="line">    private static final double OPTIMAL_P = 0.25;</span><br><span class="line">    </span><br><span class="line">    public SkipList() &#123;</span><br><span class="line">        // 0.25, 15</span><br><span class="line">        // 最大高度计算</span><br><span class="line">        this(OPTIMAL_P, (int)Math.ceil(Math.log(Integer.MAX_VALUE) / Math.log(1 / OPTIMAL_P)) - 1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SkipList(double probability, int maxLevel) &#123;</span><br><span class="line">        // 概率</span><br><span class="line">        P = probability;</span><br><span class="line">        // 高度</span><br><span class="line">        MAX_LEVEL = maxLevel;</span><br><span class="line">        // 初始化当前层数</span><br><span class="line">        listLevel = 1;</span><br><span class="line">        // 头指针</span><br><span class="line">        listHead = new SkipListNode&lt;T&gt;(Integer.MIN_VALUE, null, maxLevel);</span><br><span class="line">        NIL = new SkipListNode&lt;T&gt;(Integer.MAX_VALUE, null, maxLevel);</span><br><span class="line">        // 初始化SkipList当前层节点</span><br><span class="line">        for (int i = listHead.forward.length - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">            listHead.forward[i] = NIL;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // SkipListNode</span><br><span class="line">    class SkipListNode&lt;T&gt; &#123;</span><br><span class="line">        int key;</span><br><span class="line">        T value;</span><br><span class="line">        // 当前层节点</span><br><span class="line">        SkipListNode[] forward;</span><br><span class="line">        </span><br><span class="line">        public SkipListNode(int key, T value, int level) &#123;</span><br><span class="line">            this.key = key;</span><br><span class="line">            this.value = value;</span><br><span class="line">            this.forward = new SkipListNode[level];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><blockquote>
+<ol>
+<li><a href="http://www.zkt.name/skip-list/" target="_blank" rel="noopener">Skip List（跳跃表）原理详解与实现</a></li>
+<li><a href="http://dsqiu.iteye.com/blog/1705530" target="_blank" rel="noopener">图解Skip List</a></li>
+<li><a href="http://daoluan.net/%E6%9C%AA%E5%88%86%E7%B1%BB/2014/06/26/decode-redis-data-struct-skiplist.html" target="_blank" rel="noopener">深入剖析 redis 数据结构 skiplist
+</a></li>
+<li><a href="https://segmentfault.com/a/1190000006024984" target="_blank" rel="noopener">跳表 skiplist</a></li>
+</ol>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/10/Nginx入门/" rel="next" title="Nginx入门">
+                <i class="fa fa-chevron-left"></i> Nginx入门
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/25/Spring-Dispatcher/" rel="prev" title="Spring Dispatcher">
+                Spring Dispatcher <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/image/avatar.jpg"
+                alt="HWolf" />
+            
+              <p class="site-author-name" itemprop="name">HWolf</p>
+              <p class="site-description motion-element" itemprop="description">生命不息，追求不止。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/HWOLFeng" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:h.wolf@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SkipList是什么？"><span class="nav-number">1.</span> <span class="nav-text">SkipList是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SkipList查找节点"><span class="nav-number">2.</span> <span class="nav-text">SkipList查找节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SkipList插入节点"><span class="nav-number">3.</span> <span class="nav-text">SkipList插入节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SkipList删除"><span class="nav-number">4.</span> <span class="nav-text">SkipList删除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis如何实现SkipList？"><span class="nav-number">5.</span> <span class="nav-text">Redis如何实现SkipList？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis中SkipList插入算法"><span class="nav-number">6.</span> <span class="nav-text">redis中SkipList插入算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis中SkipList删除算法"><span class="nav-number">7.</span> <span class="nav-text">redis中SkipList删除算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis中的ZSET"><span class="nav-number">8.</span> <span class="nav-text">redis中的ZSET</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用JAVA简单实现SkipList数据结构"><span class="nav-number">9.</span> <span class="nav-text">使用JAVA简单实现SkipList数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">10.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HWolf</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId=64903116";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://hwolf-cn.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://hwolf.cn/2017/08/21/浅析Redis的SkipList/';
+          this.page.identifier = '2017/08/21/浅析Redis的SkipList/';
+          this.page.title = '浅析Redis的SkipList';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://hwolf-cn.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("VMV0zMmgE1rKi4yJjjDAaIEr-gzGzoHsz", "qlGPUpCz1Fatt1wVNqMxY3i9");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
