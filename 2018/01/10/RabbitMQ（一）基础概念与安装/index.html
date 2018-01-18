@@ -92,7 +92,7 @@
 <meta property="og:image" content="https://www.rabbitmq.com/img/RabbitMQ-logo.svg">
 <meta property="og:image" content="http://hwolf.cn/image/rabbitMQ-login.png">
 <meta property="og:image" content="http://hwolf.cn/image/rabbit-success.png">
-<meta property="og:updated_time" content="2018-01-10T01:07:48.000Z">
+<meta property="og:updated_time" content="2018-01-18T04:24:57.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RabbitMQ（一）基础概念与安装">
 <meta name="twitter:description" content="Broker - 简单来说就是消息队列服务器的实体。 Exchange - 消息路由器，转发消息到绑定的队列上，指定消息按什么规则，路由到哪个队列。 Queue - 消息队列，用来存储消息，每个消息都会被投入到一个或多个队列。 Binding - 绑定，它的作用就是把 Exchange 和 Queue 按照路由规则绑定起来。 RoutingKey - 路由关键字，Exchange 根据这个关键">
@@ -386,9 +386,10 @@
 <ul>
 <li>启动RabbitMQ，安装可视化管理界面</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable rabbitmq-server</span><br></pre></td></tr></table></figure>
-<p>创建配置文件，<code>vi /etc/rabbitmq/rabbitmq.config</code>，写入下面内容，我在这里指定了端口号5673， 另外还要注意最后的一个.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl start rabbitmq-server</span><br><span class="line"># 安装可视化管理界面</span><br><span class="line">rabbitmq-plugins enable rabbitmq_management</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable rabbitmq-server</span><br><span class="line">systemctl start rabbitmq-server</span><br><span class="line"># 安装可视化管理界面</span><br><span class="line">rabbitmq-plugins enable rabbitmq_management</span><br></pre></td></tr></table></figure>
+<p>创建配置文件，<code>vi /etc/rabbitmq/rabbitmq.config</code>，写入下面内容，我在这里指定了端口号5672， 另外还要注意最后的一个<code>.</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    &#123;rabbit,</span><br><span class="line">      [</span><br><span class="line">         &#123;loopback_users, [&quot;test&quot;]&#125;,</span><br><span class="line">         &#123;tcp_listeners, [5672]&#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">].</span><br></pre></td></tr></table></figure>
+<p>重启：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart rabbitmq-server</span><br></pre></td></tr></table></figure></p>
 <ul>
 <li>重启与停止</li>
 </ul>
