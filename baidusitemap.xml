@@ -4,6 +4,23 @@
 
     
   <url>
+    <loc>https://hwolf.cn/2018/02/19/RabbitMQ%EF%BC%88%E4%B8%89%EF%BC%89-%E6%B6%88%E6%81%AF%E6%8C%81%E4%B9%85%E5%8C%96%E4%B8%8E%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85/</loc>
+    <lastmod>2018-02-19T06:12:56.977Z</lastmod>
+    <data>
+        <display>
+        <title>RabbitMQ（三）-消息持久化与发布订阅</title>
+        <pubTime>2018-02-19T06:11:40.000Z</pubTime>
+        
+        <tag>RabbitMQ</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://hwolf.cn/2018/01/18/RabbitMQ(%E4%BA%8C)%E7%AE%80%E5%8D%95Queue-Java%E5%AE%9E%E7%8E%B0/</loc>
     <lastmod>2018-01-18T15:32:10.000Z</lastmod>
     <data>
