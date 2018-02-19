@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://hwolf.cn/"/>
-  <updated>2018-02-19T06:14:05.694Z</updated>
+  <updated>2018-02-19T08:07:25.914Z</updated>
   <id>https://hwolf.cn/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>RabbitMQ（四）--路由</title>
+    <link href="https://hwolf.cn/2018/02/19/RabbitMQ%EF%BC%88%E5%9B%9B%EF%BC%89-%E8%B7%AF%E7%94%B1/"/>
+    <id>https://hwolf.cn/2018/02/19/RabbitMQ（四）-路由/</id>
+    <published>2018-02-19T08:06:51.000Z</published>
+    <updated>2018-02-19T08:07:25.914Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="绑定指定路由（Bindings）"><a href="#绑定指定路由（Bindings）" class="headerlink" title="绑定指定路由（Bindings）"></a>绑定指定路由（Bindings）</h1><p>将队列绑定到指定路由需要填写<code>routingKey</code>，而在之前我们是默认不填写的：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 默认</span></span><br><span class="line">channel.queueBind(queueName, EXCHANGE_NAME, <span class="string">""</span>);</span><br><span class="line"><span class="comment">// 第三个参数指定 routingKey</span></span><br><span class="line">channel.queueBind(queueName, EXCHANGE_NAME, <span class="string">"black"</span>);</span><br></pre></td></tr></table></figure><p>绑定key的含义根据不同类型的交换机而不同，对于我前面使用的fanout类型的交换机，会忽略这个参数。</p><h1 id="直接交换机（Direct-exchange）"><a href="#直接交换机（Direct-exchange）" class="headerlink" title="直接交换机（Direct exchange）"></a>直接交换机（Direct exchange）</h1><p>在之前的exchange实现上，我们是通过类似广播的方式将消息全部发送给了consumer。但毕竟磁盘空间是宝贵的，我们现在需要根据日志类型的不同来过滤掉不重要的信息，只保存error。</p><p>我们先使用<code>direct exchange</code>，它的规则很简单，就是<code>routing key</code>一致就发送。考虑入下图配置，x exchange跟两个队列Q1、Q2绑定，Q1使用orange的作为关键字，Q2使用了black和green。：</p><p><img src="http://www.rabbitmq.com/img/tutorials/direct-exchange.png" alt=""></p><h1 id="单Key绑定多Queue（Multiple-bindings）"><a href="#单Key绑定多Queue（Multiple-bindings）" class="headerlink" title="单Key绑定多Queue（Multiple bindings）"></a>单Key绑定多Queue（Multiple bindings）</h1><p>同时，还能支持<code>direct exchange</code>使用同一个<code>routing key</code>来和多个队列绑定。这时候如果某个消息的<code>routing key</code>一致，那么消息会同时发送给这些匹配队列：</p><p><img src="http://www.rabbitmq.com/img/tutorials/direct-exchange-multiple.png" alt=""></p><h1 id="对日志系统的改进"><a href="#对日志系统的改进" class="headerlink" title="对日志系统的改进"></a>对日志系统的改进</h1><p>有了前面的基础，我们现在加上<code>routing key</code>对之前的日志系统进行整合。注意，<code>exchange</code>的类型为<code>direct</code>，关系图如下：</p><p><img src="http://www.rabbitmq.com/img/tutorials/python-four.png" alt=""></p><p>因为和上一篇的代码大致一直，结果也没有很大的变动，唯一有改变的是就是<code>exchange</code>的类型，所以仅仅贴上少部分的代码，以便于阅读。</p><ul><li>Publisher</li></ul><p>在发送端添加、修改如下代码：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建类型为direct的exchange</span></span><br><span class="line">channel.exchangeDeclare(EXCHANGE_NAME, <span class="string">"direct"</span>);</span><br><span class="line"><span class="comment">// severity为对应的routing key</span></span><br><span class="line"><span class="comment">// severity可以为 'info', 'warning', 'error'</span></span><br><span class="line">channel.basicPublish(EXCHANGE_NAME, severity, <span class="keyword">null</span>, message.getBytes());</span><br></pre></td></tr></table></figure><ul><li>Subscriber</li></ul><p>再订阅端遍历、绑定<code>routing key</code>：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">String queueName = channel.queueDeclare().getQueue();</span><br><span class="line"><span class="comment">// 遍历所传入参数</span></span><br><span class="line"><span class="keyword">for</span>(String severity : argv)&#123;</span><br><span class="line">  channel.queueBind(queueName, EXCHANGE_NAME, severity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><blockquote><ol><li><a href="http://www.rabbitmq.com/tutorials/tutorial-four-java.html" target="_blank" rel="noopener">Routing</a></li></ol></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;绑定指定路由（Bindings）&quot;&gt;&lt;a href=&quot;#绑定指定路由（Bindings）&quot; class=&quot;headerlink&quot; title=&quot;绑定指定路由（Bindings）&quot;&gt;&lt;/a&gt;绑定指定路由（Bindings）&lt;/h1&gt;&lt;p&gt;将队列绑定到指定路由需要填写
+      
+    
+    </summary>
+    
+    
+      <category term="RabbitMQ" scheme="https://hwolf.cn/tags/RabbitMQ/"/>
+    
+  </entry>
   
   <entry>
     <title>RabbitMQ（三）-消息持久化与发布订阅</title>
